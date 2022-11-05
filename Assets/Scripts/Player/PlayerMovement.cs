@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed;
+    public float sprintSpeed;
     public Transform orientation;
 
     public float groundDrag;
@@ -14,9 +15,11 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCooldown;
     public float airMultiplier;
     bool readyToJump = true;
+    bool isRunning;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
+    public KeyCode sprintKey = KeyCode.LeftShift;
    
 
     [Header("Ground Check")]
@@ -76,6 +79,10 @@ public class PlayerMovement : MonoBehaviour
              Функция Invoke запустит метод ResetJump через jumpCooldown секунд */
             Invoke(nameof(ResetJump), jumpCooldown);
         }
+        if (Input.GetKey(sprintKey))
+            isRunning = true;
+        else
+            isRunning = false;
     }
 
     private void MovePlayer()
@@ -83,9 +90,15 @@ public class PlayerMovement : MonoBehaviour
         // Просчитываем направление движения и двигаем игрока
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
+        float playerSpeed;
+        if (isRunning)
+            playerSpeed = moveSpeed + sprintSpeed;
+        else
+            playerSpeed = moveSpeed;
+
         // Если игрок на земле, просто двигаем его
         if (grounded)
-            rb.AddForce(moveDirection.normalized * moveSpeed * 10f, ForceMode.Force);
+            rb.AddForce(moveDirection.normalized * playerSpeed * 10f, ForceMode.Force);
         // Если он в слегка замедляем его (Важно! airMultiplier дожен быть меньше единицы)
         else
             rb.AddForce(moveDirection.normalized * moveSpeed * airMultiplier * 10f, ForceMode.Force);
