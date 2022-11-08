@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     public float airMultiplier;
     bool readyToJump = true;
     bool isRunning;
+    float previousSpeed;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
@@ -90,18 +91,26 @@ public class PlayerMovement : MonoBehaviour
         // ѕросчитываем направление движени€ и двигаем игрока
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
 
+
+        /* ≈сли игрок не находитс€ на земле, то присваеваем ему ту скорость,
+           которую он имел, когда он был на земле. »наче просто увеличиваем
+           или уменьшаем скорость в зависимости от того, бежит он или нет */
         float playerSpeed;
-        if (isRunning)
+
+        if (!grounded)
+            playerSpeed = previousSpeed;
+        else if (isRunning && grounded)
             playerSpeed = moveSpeed + sprintSpeed;
         else
             playerSpeed = moveSpeed;
+        previousSpeed = playerSpeed;
 
         // ≈сли игрок на земле, просто двигаем его
         if (grounded)
             rb.AddForce(moveDirection.normalized * playerSpeed * 10f, ForceMode.Force);
         // ≈сли он в слегка замедл€ем его (¬ажно! airMultiplier дожен быть меньше единицы)
         else
-            rb.AddForce(moveDirection.normalized * moveSpeed * airMultiplier * 10f, ForceMode.Force);
+            rb.AddForce(moveDirection.normalized * playerSpeed * airMultiplier * 10f, ForceMode.Force);
     }
 
     private void SpeedControl()
